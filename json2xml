@@ -1,0 +1,38 @@
+local json = require("json")
+
+-- 输入的JSON字符串
+local jsonString = '{"name": "John", "age": 30, "address": {"street": "123 Main St", "zip": 10001}, "groups": {"item": [{"name":"张三","desc":"张三的个人描述"}, {"name":"李四","desc":"李四的个人描述"}]}, "arr": ["Bob", "Alice"]}'
+
+-- 解析JSON字符串
+local jsonData = json.decode(jsonString)
+
+-- 转换为XML格式
+local function tableToXml(tbl)
+    local xml = ""
+    for key, value in pairs(tbl) do
+        if type(value) == "table" then
+            if key == "item" and type(value[1]) == "table" then
+                -- 处理集合的情况
+                for _, item in ipairs(value) do
+                    xml = xml .. "<" .. key .. ">" .. tableToXml(item) .. "</" .. key .. ">"
+                end
+            elseif #value > 0 then
+                -- 处理数组的情况
+                for _, item in ipairs(value) do
+                    xml = xml .. "<" .. key .. ">" .. item .. "</" .. key .. ">"
+                end
+            else
+                -- 处理嵌套对象的情况
+                xml = xml .. "<" .. key .. ">" .. tableToXml(value) .. "</" .. key .. ">"
+            end
+        else
+            xml = xml .. "<" .. key .. ">" .. value .. "</" .. key .. ">"
+        end
+    end
+    return xml
+end
+
+-- 生成XML字符串
+local xmlString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root>" .. tableToXml(jsonData) .. "</root>"
+
+print(xmlString)
